@@ -33,31 +33,62 @@ def generate(path: str, configs: List[conf.Sig53Config]):
 
 @click.command()
 @click.option("--root", default="sig53", help="Path to generate sig53 datasets")
-@click.option("--all", default=True, help="Generate all versions of sig53 dataset.")
 @click.option(
-    "--impaired",
-    default=False,
-    help="Generate impaired dataset. Ignored if --all=True (default)",
+    "--size",
+    default="large",
+    help="small, medium, or large (default)",
 )
-def main(root: str, all: bool, impaired: bool):
+@click.option(
+    "--type",
+    default="all",
+    help="clean, impaired, all, or qa",
+)
+def main(root: str, size: str, type: str):
     if not os.path.isdir(root):
         os.mkdir(root)
 
     configs = [
         conf.Sig53CleanTrainConfig,
+        conf.Sig53CleanTrainMediumConfig,
+        conf.Sig53CleanTrainSmallConfig,
+        conf.Sig53CleanTrainQAConfig,
         conf.Sig53CleanValConfig,
+        conf.Sig53CleanValMediumConfig,
+        conf.Sig53CleanValSmallConfig,
+        conf.Sig53CleanValQAConfig,
         conf.Sig53ImpairedTrainConfig,
+        conf.Sig53ImpairedTrainMediumConfig,
+        conf.Sig53ImpairedTrainSmallConfig,
+        conf.Sig53ImpairedTrainQAConfig,
         conf.Sig53ImpairedValConfig,
+        conf.Sig53ImpairedValMediumConfig,
+        conf.Sig53ImpairedValSmallConfig,
+        conf.Sig53ImpairedValQAConfig,
     ]
-    if all:
-        generate(root, configs)
+    if type == "qa":
+        generate(root, configs[3::4])
         return
 
-    if impaired:
-        generate(root, configs[2:])
+    if size == "small":
+        if type == "clean" or type == "all":
+            generate(root, configs[2:7:4])
+        if type == "impaired" or type == "all":
+            generate(root, configs[10::4])
         return
 
-    generate(root, configs[:2])
+    if size == "medium":
+        if type == "clean" or type == "all":
+            generate(root, configs[1:6:4])
+        if type == "impaired" or type == "all":
+            generate(root, configs[9::4])
+
+        return
+
+    if type == "clean" or type == "all":
+        generate(root, configs[0:5:4])
+
+    if type == "impaired" or type == "all":
+        generate(root, configs[8::4])
 
 
 if __name__ == "__main__":
